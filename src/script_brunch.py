@@ -1,21 +1,46 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from concurrent.futures import ThreadPoolExecutor
 import concurrent.futures
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.keys import Keys
+from helper import convert_publish_time, writeToCsv
 import time
 import threading
-import csv
+import csv, os
 from datetime import datetime, date
 
+
+def setup_chrome_driver():
+    # Setup Chrome options
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--headless")  # Run in headless mode if needed
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU for headless mode
+
+    # Use WebDriver Manager to get the ChromeDriver
+    service = Service(ChromeDriverManager().install())
+
+    # Create the driver
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    return driver
+
+def webDriverTest():
+    url = "https://brunch.co.kr/search"
+    driver = setup_chrome_driver()
+    driver.get(url)
+    return
 # brunch 사이트 크롤링 코드
 def get_brunch(keyword, lock, all_contents):
     url = "https://brunch.co.kr/search"
 
-    driver = webdriver.Chrome()
+    driver = setup_chrome_driver()
     driver.get(url)
 
     search_input = driver.find_element(By.ID, 'txt_search')
@@ -72,7 +97,10 @@ def get_brunch(keyword, lock, all_contents):
 
     # Close the driver
     driver.quit()
-
+    
+    # 브런치 데이터는 여러 키워드 들에서 추출한 것이므로, 순서가 섞여있고, 이를 년도-월-날짜 각각 순서대로
+    # 정렬하는 코드입니다. day 의 경우, "-분전", "-시간전" 부분을 고려해야 합니다. 
+    
     with lock:
         all_contents.extend(content_list)
     
@@ -82,8 +110,6 @@ def get_brunch(keyword, lock, all_contents):
 
 def main():
     search_list = ["개발자", "프론트엔드", "백엔드", "코딩", "코딩테스트", "소프트웨어"]
-    # search_list = ["개발자", "프론트엔드", "백엔드"]
-    content_index = 0
     all_contents = []  # List to store all contents
     # Performance timers
     start_time = time.time()
@@ -119,44 +145,8 @@ def main():
             seen_hrefs.add(href)
             unique_contents.append(content)
 
-    # Define a mapping for English month names to month numbers
-    month_mapping = {
-        'Jan': '01',
-        'Feb': '02',
-        'Mar': '03',
-        'Apr': '04',
-        'May': '05',
-        'Jun': '06',
-        'Jul': '07',
-        'Aug': '08',
-        'Sep': '09',
-        'Oct': '10',
-        'Nov': '11',
-        'Dec': '12'
-    }
-
-    # Function to convert the publish_time to a sortable date format
-    def convert_publish_time(date_str):
-        
-        if len(date_str.split()) == 1:
-            today = date.today()
-            year = str(today.year)
-            month = str(today.month).zfill(2)
-            day = str(today.day).zfill(2)
-            return [year, month, day]
-
-        # Split the date string into day, month, and year
-        month, day, year = date_str.split()
-
-        # Convert the month name to the corresponding month number
-        month_number = month_mapping.get(month)
-
-        # Create a sortable date string in the format 'YYYY-MM-DD'
-        return [year, month_number, day]
-
     # 브런치 데이터는 여러 키워드 들에서 추출한 것이므로, 순서가 섞여있고, 이를 년도-월-날짜 각각 순서대로
     # 정렬하는 코드입니다. day 의 경우, "-분전", "-시간전" 부분을 고려해야 합니다. 
-    
     
     sorted_contents = sorted(unique_contents, key=lambda x: (
         convert_publish_time(x['publish_time'])[0],  # Accessing the year element
@@ -164,32 +154,17 @@ def main():
         convert_publish_time(x['publish_time'])[2]   # Accessing the day element
     ), reverse=True)
 
+    # Get the current file directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
     # Get the current date and format it
     current_date = datetime.now().strftime("%Y%m%d")
-    filename = f"contents_brunch_{current_date}.csv"
-
-    # Write the sorted contents to a CSV file
+    
+    # Construct the filename with the current directory
+    filename = os.path.join(current_dir, '..', 'data', f"contents_brunch_{current_date}.csv")
     
     # csv 데이터 생성 후, used 라벨을 관리하여, 추후 딥러닝에 활용할 수 있도록 합니다.
-    
-    
-    with open(filename,  'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['index', 'used', 'title', 'author', 'publish_time', 'href', 'context', 'search']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-        for i, content in enumerate(sorted_contents):
-            writer.writerow({
-                'index': content_index + (i+1),
-                'used' : 0,
-                'title': content['title'],
-                'context': content['context'],
-                'publish_time': content['publish_time'],
-                'author': content['author'],
-                'href': content['href'],
-                'search': content['search']
-            })
-        content_index += len(sorted_contents)
+    writeToCsv(filename, sorted_contents)
 
     # Print performance results
     print(f"Overall Program Execution Time: {program_execution_time} seconds")
@@ -197,6 +172,7 @@ def main():
         print(f"Thread '{keyword}' Execution Time: {timer} seconds")
 
 if __name__ == '__main__':
+    # webDriverTest()
     main()
     
     
