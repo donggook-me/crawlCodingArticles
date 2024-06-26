@@ -42,8 +42,11 @@ Summary:
 	•	Average Threaded Execution Time: 11.89 seconds
 	•	Speedup Factor: 4.82
 ------------------------------
+![image](https://github.com/donggook-me/crawlCodingArticles/assets/53322908/9fc461ca-358c-4ca5-bcd6-684c33b98daf)
 
-+ 231208
+
+Additional Story (Asked by Interviewer about this project)
+
 + Interviewer aksed me why do I use threading, and let me explain Python Global Interperter Lock(GIL) concept.
 + I cannot answer about GIL at that time, but now I can tell what it is and what does that question means.
 
