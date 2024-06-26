@@ -12,19 +12,33 @@ And then you can run each "script_brunch.py" and "script_youtube.py" file just c
 ------------------------------
 Performance Time Measurement
 
-Experiment(how fast it could be when using thread)
+Experiment: Using Threads for Crawling and Writing Data
 
-* Task : Crawl Contents from 6 kind of keyword and Write data to Csv (around 400 metadata)
-    Before Using Thread (you can see code on "script_brunch_no_thread.py")
-        Overall Program Execution Time: 56.732953786849976 seconds
-        Overall Program Execution Time: 57.02118492126465 seconds
-        Overall Program Execution Time: 58.075032234191895 seconds
-    After Using Thread (you can see code "sript_brunch.py")
-        Overall Program Execution Time: 12.092816829681396 seconds
-        Overall Program Execution Time: 11.791560173034668 seconds
-        Overall Program Execution Time: 11.781048059463501 seconds
-    
-    •	Average Non-threaded Execution Time: 57.28 seconds
+Task:
+
+Crawl contents from 6 different keywords and write data to a CSV file (approximately 400 metadata items).
+
+Results:
+
+Before Using Threads
+
+(See code in script_brunch_no_thread.py)
+
+	•	Overall Program Execution Time: 56.73 seconds
+	•	Overall Program Execution Time: 57.02 seconds
+	•	Overall Program Execution Time: 58.08 seconds
+
+After Using Threads
+
+(See code in script_brunch.py)
+
+	•	Overall Program Execution Time: 12.09 seconds
+	•	Overall Program Execution Time: 11.79 seconds
+	•	Overall Program Execution Time: 11.78 seconds
+
+Summary:
+
+	•	Average Non-threaded Execution Time: 57.28 seconds
 	•	Average Threaded Execution Time: 11.89 seconds
 	•	Speedup Factor: 4.82
 ------------------------------
