@@ -16,11 +16,11 @@ Experiment: Using Threads for Crawling and Writing Data
 
 Task:
 
-Crawl contents from 6 different keywords and write data to a CSV file (approximately 400 metadata items).
+	Crawl contents from 6 different keywords and write data to a CSV file (approximately 400 metadata items).
 
 Results:
 
-Before Using Threads
+	Before Using Threads
 
 (See code in script_brunch_no_thread.py)
 
